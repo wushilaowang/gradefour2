@@ -35,6 +35,7 @@ export default {
     },
     methods: {
         handlePlay() {
+            const that = this
             //获取元素
             let audio = document.querySelector('#wordAudio');
             //src数组
@@ -44,22 +45,24 @@ export default {
             }
             console.log(this.wordVoices)
             let src = this.wordVoices.shift();
-            console.log(this.wordVoices)
-            audio.addEventListener("ended", this.playEndedHandler(audio), false);
-        },
-        voice() {
-            let audio = new Audio();
-            console.log(1)
-            
-            console.log(this.wordVoices)
-        },
-        //播放结束播放下一个
-        playEndedHandler(audio) {
-            console.log(2)
-            let src = this.wordVoices.shift();
             audio.src = src;
+            console.log(this.wordVoices)
+            audio.addEventListener('ended', function() {
+                console.log(that.wordVoices.length)
+                if(that.wordVoices.length > 0) {
+                    audio.src = that.wordVoices.shift()
+                    audio.play()
+                    console.log(audio.src)
+                }else {
+                    if(that.wordList.length > that.currentIndex) {
+                        that.currentIndex = ++that.currentIndex;
+                        that.handlePlay() 
+                    }
+                }
+            });
+            
             audio.play();
-        }
+        },
     }
 }
 </script>
