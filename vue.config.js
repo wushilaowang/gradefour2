@@ -4,16 +4,16 @@ module.exports = {
     devServer: {
         open: false,//启动不打开网页
         host: '0.0.0.0',
-        port: 8082,
+        port: 92,
         https: false,
         hotOnly: false,
         proxy: {
-            '/api': {
+            '': {
                 target: 'http://39.97.214.57:91', // 你接口的域名
                 secure: false, // 如果是https接口，需要配置这个参数为true
                 changeOrigin: true, // 如果接口跨域，需要进行这个参数配置为true
                 pathRewrite: {
-                    '^/api': ''
+                    '': 'http://39.97.214.57:91'
                 }
             }
         }
