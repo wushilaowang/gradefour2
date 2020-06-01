@@ -24,12 +24,19 @@ export default {
         }
     },
     created() {
-        this.loadWord();
+        //第一次加载单词
+        let that = this;
+        let arr = this.loadWord();
+        arr.then(res => {
+            res.map(item => {
+                that.wordList.push(item)
+            })
+        })
         this.pageLoad = true
     },
     methods: {
         //加载单词
-        loadWord() {
+        async loadWord() {
             let that = this;
             let param = {
                 url: '/getWord',
@@ -38,62 +45,55 @@ export default {
                     pageSize: 2
                 }
             }
-            word(param).then(res => {
-                res.data.map(item => {
-                    that.wordList.push(item)
-                })
+            let arr =[]
+            await word(param).then(res => {
+                arr = res.data
             })
+            return arr
         },
         handlePlay() {
             const that = this
-            console.log(this.wordList)
             //获取元素
             let audio = document.querySelector('#wordAudio');
             that.loadVoicSrc()
-            console.log(this.wordVoices)
             //首个src
             let src = this.wordVoices.shift();
             audio.src = src;
             audio.play();
-            console.log(this.wordVoices)
             //播放完触发
             audio.addEventListener('ended', function() {
-                console.log(that.wordList.length)
                 if(that.wordVoices.length > 0) {//播放列表中还有
                     audio.src = that.wordVoices.shift()
-                    audio.play()
-                    console.log(audio.src)
+                    audio.src != undefined && audio.play()
                 }else {
-                    console.log(that.wordList.length > that.currentIndex + 1)
                     if(that.wordList.length > that.currentIndex + 1) {//加载单词的数量 > 当前单词序号
-                        that.currentIndex = that.currentIndex + 1;
+                        
                         that.loadVoicSrc();
                         audio.src = that.wordVoices.shift();
                         audio.play();
                     }else {//再次加载单词
-                        console.log(that.wordVoices)
                         that.currentPage = that.currentPage + 1;
-                        that.loadWord();
-                        console.log(that.wordList)
-                        that.currentIndex = that.currentIndex + 1;
-                        that.loadVoicSrc();
-                        audio.src = that.wordVoices.shift();
-                        audio.play();
+                        let arr = that.loadWord();
+                        arr.then(res => {
+                            res.map(item => {
+                                that.wordList.push(item)
+                            })
+                            that.loadVoicSrc()
+                            audio.src = that.wordVoices.shift();
+                            audio.src != undefined && audio.play();
+                        }) 
                     }
                 }
             });
         },
         //加载src
         loadVoicSrc() {
-            let arr = this.wordList
-            JSON.parse(JSON.stringify(arr))
-            console.log(this.currentIndex)
-            console.log(arr)
             //循环次数 audio src数组
             for(let i = 0; i < this.loopCount; i++){
-                this.wordVoices.push("http://dict.youdao.com/dictvoice?audio="+this.wordList[this.currentIndex].word+"&type=1")
+                this.wordVoices.push("http://dict.youdao.com/dictvoice?audio="+JSON.parse(JSON.stringify(this.wordList))[this.currentIndex + 1].word+"&type=1")
                 // this.wordVoices.push("https://fanyi.baidu.com/gettts?lan=zh&text="+this.wordList[this.currentIndex].paraphrase+"&spd=5&source=web")
             }
+            this.currentIndex = this.currentIndex + 1;
         }
     }
 }
@@ -101,7 +101,5 @@ export default {
 
 <style scoped>
 
-[v-cloak] {
-    display: none;
-}
+
 </style>
